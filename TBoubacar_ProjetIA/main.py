@@ -4,17 +4,20 @@ import random
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from numpy.lib.scimath import sqrt
 
 from sklearn.preprocessing import normalize
 
 #   RECUPERATION DES JEUX DE DONNÉES
 # nomFichierCSV = "iris2Classes.csv"
 # nomFichierCSV = "heart-statlog.csv"
-nomFichierCSV = "diabetes.csv"
+# nomFichierCSV = "diabetes.csv"
+nomFichierCSV = "optdigit_39.csv"
 
 infoData = pd.read_csv(nomFichierCSV, sep=",")
 classTrain = infoData['class']
 valueTrain = infoData.drop('class', axis=1)
+resultatFichier = open("resultat_" + nomFichierCSV + ".txt", "w")
 
 #   CREATION DES FONCTIONS DE TRAITEMENTS DE DONNÉES
 def dessinneGraphe(nomClass1, nomClass2, nomAttribut1, nomAttribut2, titre):
@@ -33,6 +36,8 @@ def affichageGraphiqueIris(nomDuFichier):
     '''
     print("=========Affichage graphique du jeu de données (", nomDuFichier, ") :")
     print("L'attribut le plus important est : petallength (attribut n°3)\n")
+    resultatFichier.write("=========Affichage graphique du jeu de données (" + nomDuFichier + ") :\n")
+    resultatFichier.write("L'attribut le plus important est : petallength (attribut n°3)\n\n")
     dessinneGraphe('Iris-versicolor', 'Iris-virginica', "petallength", "petalwidth", "Les K plus proches voisins pour le jeu de données ({})".format(nomDuFichier))
 
 def affichageGraphiqueHeartStatlog(nomDuFichier):
@@ -41,7 +46,9 @@ def affichageGraphiqueHeartStatlog(nomDuFichier):
     :return:                AFFICHE GRACE À LA BIBLIOTHEQUE MATPLOTLIB UNE REPRESENTATION DES DIFFÉRENTES CLASSES DE NOTRE JEU DE DONNÉE DANS UN GRAPHISME
     '''
     print("=========Affichage graphique du jeu de données (", nomDuFichier, ") : ...")
-    print("L'attribut le plus important est : maximum_heart_rate_achieved (attribut n°8)\n")
+    print("L'attribut le plus important est : age (attribut n°1) et maximum_heart_rate_achieved (attribut n°8)\n")
+    resultatFichier.write("=========Affichage graphique du jeu de données (" + nomDuFichier + ") : ...\n")
+    resultatFichier.write("L'attribut le plus important est : age (attribut n°1) et maximum_heart_rate_achieved (attribut n°8)\n\n")
     dessinneGraphe('absent', 'present', "age", "maximum_heart_rate_achieved", "Les K plus proches voisins pour le jeu de données ({})".format(nomDuFichier))
 
 def affichageGraphiqueDiabete(nomDuFichier):
@@ -49,21 +56,42 @@ def affichageGraphiqueDiabete(nomDuFichier):
     :param nomDuFichier:    CORRESPOND AU NOM DU FICHIER CSV CONTENANT LES JEUX DE DONNÉES A ETUDIER
     :return:                AFFICHE GRACE À LA BIBLIOTHEQUE MATPLOTLIB UNE REPRESENTATION DES DIFFÉRENTES CLASSES DE NOTRE JEU DE DONNÉE DANS UN GRAPHISME
     '''
+    resultatFichier.write("=========Affichage graphique du jeu de données (" + nomDuFichier + ") : ...\n")
+    resultatFichier.write("L'attribut le plus important est : age (attribut n°8)\n\n")
     print("=========Affichage graphique du jeu de données (", nomDuFichier, ") : ...")
-    print("L'attribut le plus important est : age (attribut n°8) et pres (attribut n°3)\n")
+    print("L'attribut le plus important est : age (attribut n°8)\n")
     dessinneGraphe('tested_negative', 'tested_positive', "age", "pres", "Les K plus proches voisins pour le jeu de données ({})".format(nomDuFichier))
 
-def affichageDesDonnees(nomDuFichier):
+def affichageGraphiqueOptDigit(nomDuFichier, W):
     '''
     :param nomDuFichier:    CORRESPOND AU NOM DU FICHIER CSV CONTENANT LES JEUX DE DONNÉES A ETUDIER
-    :return:                AFFICHE L'ENSEMBLE DES INFORMATIONS SUR LE JEU DE DONNÉES FOURNI
+    :return:                AFFICHE GRACE À LA BIBLIOTHEQUE MATPLOTLIB UNE REPRESENTATION DES DIFFÉRENTES CLASSES DE NOTRE JEU DE DONNÉE DANS UN GRAPHISME
     '''
+    resultatFichier.write("=========Affichage graphique du jeu de données (" + nomDuFichier + ") : ...\n")
+    resultatFichier.write("L'attribut le plus important est : input27 (attribut n°27)\n\n")
+    print("=========Affichage graphique du jeu de données (", nomDuFichier, ") : ...")
+    print("L'attribut le plus important est : input27 (attribut n°27)\n")
+    taille = int(sqrt(W.shape))
+    if nomFichierCSV == "optdigit_39.csv":
+        W2D = [[W[j * taille + i] for i in range(taille)] for j in range(taille)]
+        plt.matshow(W2D)
+        plt.show()
+
+def doGraphe(nomDuFichier, W):
     if nomDuFichier == "iris2Classes.csv":
         affichageGraphiqueIris(nomFichierCSV)
     if nomDuFichier == "heart-statlog.csv":
         affichageGraphiqueHeartStatlog(nomDuFichier)
     if nomDuFichier == "diabetes.csv":
         affichageGraphiqueDiabete(nomDuFichier)
+    if nomDuFichier == "optdigit_39.csv":
+        affichageGraphiqueOptDigit(nomDuFichier, W)
+
+def affichageDesDonnees(nomDuFichier):
+    '''
+    :param nomDuFichier:    CORRESPOND AU NOM DU FICHIER CSV CONTENANT LES JEUX DE DONNÉES A ETUDIER
+    :return:                AFFICHE L'ENSEMBLE DES INFORMATIONS SUR LE JEU DE DONNÉES FOURNI
+    '''
     print("=========Affichage du jeux de données (", nomDuFichier, ") :")
     print(infoData, "\n")
     print("---------Affichage des Classes à rechercher :")
@@ -76,9 +104,11 @@ def initialisationDuVecteurPoidsDesAttributs():
     '''
     :return:    FONCTION PERMETTANT D'INITIALISER LE VECTEUR DE POIDS DES ATTRIBUTS DE NOTRE JEU DE DONNÉES A 0 (W[i] = 0)
     '''
+    resultatFichier.write("=========Initialisation du vecteur poids W[i] à 0, pour i compris entre [0, d] avec d le nombre d'attributs du jeu de données choisi.\n")
     print("=========Initialisation du vecteur poids W[i] à 0, pour i compris entre [0, d] avec d le nombre d'attributs du jeu de données choisi.")
     #   DECLARATION ET INITIALISATION DU VECTEUR DE POIDS POUR L'ENSEMBLE DES ATTRIBUTS DE NOTRE JEU DE DONNÉES
     W = np.zeros(len(infoData.columns)-1)
+    resultatFichier.write(W.__str__() + '\n\n')
     print(W, '\n')
     return W
 
@@ -86,6 +116,7 @@ def normaliserLesDonneesDesAttributs():
     '''
     :return:    RETOURNE UN TABLEAU CONTENANT DES ENSEMBLES DE VECTEUR NORMALISÉ DES DONNÉES DE NOS ATTRIBUTS
     '''
+    resultatFichier.write("Normalisation des valeurs des attributs fait !\n\n")
     print("Normalisation des valeurs des attributs fait !\n")
     tab = []
     for sample in valueTrain.values:
@@ -150,9 +181,11 @@ def KNNOfDiffClasse(dataValueTrain, x, k, typeClass):
     return indiceKNN[: k]
 
 def traitementDuPseudoCodeRelief(W):
-    m = random.randint(20, 30)
+    fin = int((valueTrain.shape[0]/4) + 20)
+    m = random.randint(20, fin)
     k = 1   #   LES K PLUS PROCHES VOISINS
-    print("=========Traitement de l'algorithme Relief pour m =", m, "k =", k)
+    resultatFichier.write("=========Traitement de l'algorithme Relief pour m = " + str(m) + "k = " + str(k) + "\n")
+    print("=========Traitement de l'algorithme Relief pour m = ", m, "k = ", k)
     tabAttNormaliser = normaliserLesDonneesDesAttributs()
     for i in range(0, m):
         xIndice = random.randint(0, len(tabAttNormaliser) - 1)
@@ -164,14 +197,17 @@ def traitementDuPseudoCodeRelief(W):
 
         indiceOfNearestMiss = KNNOfDiffClasse(tabAttNormaliser, X, k, typeOfX)[0]
         nearestMiss = tabAttNormaliser[indiceOfNearestMiss]
-
         # print("\tElement tiré aléatoirement :", xIndice, X, typeOfX, "\n\tLe plus proche voisins de même classe :", indiceOfNearestHit, nearestHit, classTrain.values[indiceOfNearestHit], "\n\tLe plus proche voisins de classe différente :", indiceOfNearestMiss, nearestMiss, classTrain.values[indiceOfNearestMiss], "\n")
 
         for j in range(0, len(W)):
             W[j] = W[j] - (1/m) * math.pow(X[j] - nearestHit[j], 2) + (1/m) * math.pow(X[j] - nearestMiss[j], 2)
+    resultatFichier.write("_____________________________________________________________________________________________________________\n")
+    resultatFichier.write("|\tPlus le poids des attributs sont forts, plus l'attribut est important pour la classification !\n|\tLes poids W[i] des" + str(len(W)) + "attributs sont :" + W.__str__() + "\n")
+    resultatFichier.write("_____________________________________________________________________________________________________________\n\n")
     print("_____________________________________________________________________________________________________________")
     print("|\tPlus le poids des attributs sont forts, plus l'attribut est important pour la classification !\n|\tLes poids W[i] des", len(W), "attributs sont :", W)
     print("_____________________________________________________________________________________________________________\n")
+    doGraphe(nomFichierCSV, W)
 
 #==========================     PARTIE BONUS (AMELIORATION DE L'ALGORITHME)     ==========================
 
@@ -194,7 +230,10 @@ def determineBarycentre(vecteurKNN, tabAttribut):
 
 def traitementDuPseudoCodeReliefAvecBarycentre(W, k):
     m = len(valueTrain.values)
-    print("=========Traitement de l'algorithme Relief (avec Amélioration et Intégration du Barycentre) pour m =", m, "k =", k)
+    resultatFichier.write("\t_______ALGORITHME AMELIORER AVEC INTEGRATION DU CALCUL DE BARYCENTRE_______\n\n")
+    resultatFichier.write("=========Traitement de l'algorithme Relief (avec Amélioration et Intégration du Barycentre) pour m = " + str(m) + "k = " + str(k) + "\n")
+    print("\t_______ALGORITHME AMELIORER AVEC INTEGRATION DU CALCUL DE BARYCENTRE_______\n")
+    print("=========Traitement de l'algorithme Relief (avec Amélioration et Intégration du Barycentre) pour m = ", str(m), "k =", str(k))
     tabAttNormaliser = normaliserLesDonneesDesAttributs()
     for i in range(0, m):
         xIndice = random.randint(0, len(tabAttNormaliser) - 1)
@@ -206,19 +245,24 @@ def traitementDuPseudoCodeReliefAvecBarycentre(W, k):
 
         indiceOfNearestMiss = KNNOfDiffClasse(tabAttNormaliser, X, k, typeOfX)
         nearestMiss = determineBarycentre(indiceOfNearestMiss, tabAttNormaliser)
-
         # print("\tElement tiré aléatoirement :", xIndice, X, typeOfX, "\n\tLe(s) plus proche(s) voisin(s) de même classe :", indiceOfNearestHit, nearestHit, classTrain.values[indiceOfNearestHit], "\n\tLe(s) plus proche(s) voisin(s) de classe différente :", indiceOfNearestMiss, nearestMiss, classTrain.values[indiceOfNearestMiss], "\n")
 
         for j in range(0, len(W)):
             W[j] = W[j] - (1/m) * math.pow(X[j] - nearestHit[j], 2) + (1/m) * math.pow(X[j] - nearestMiss[j], 2)
+    resultatFichier.write("_____________________________________________________________________________________________________________\n")
+    resultatFichier.write("|\tPlus le poids des attributs sont forts, plus l'attribut est important pour la classification !\n|\tLes poids W[i] des" + str(len(W)) + "attributs sont :" + W.__str__() + "\n")
+    resultatFichier.write("_____________________________________________________________________________________________________________\n\n")
     print("_____________________________________________________________________________________________________________")
     print("|\tPlus le poids des attributs sont forts, plus l'attribut est important pour la classification !\n|\tLes poids W[i] des", len(W), "attributs sont :", W)
     print("_____________________________________________________________________________________________________________\n")
+    doGraphe(nomFichierCSV, W)
+
 
 #   DEBUT DU PROGRAMME PRINCIPAL
 if __name__ == '__main__':
     affichageDesDonnees(nomFichierCSV)
     W = initialisationDuVecteurPoidsDesAttributs()
     traitementDuPseudoCodeRelief(W)
-    print("\t_______ALGORITHME AMELIORER AVEC INTEGRATION DU CALCUL DE BARYCENTRE_______\n")
     traitementDuPseudoCodeReliefAvecBarycentre(W, 5)
+    resultatFichier.close()
+    print("Enregistrement du fichier (", resultatFichier.name, ") contenant le resultat de l'affichage de notre traitement de données !")
